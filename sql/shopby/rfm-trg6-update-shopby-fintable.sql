@@ -237,7 +237,7 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
           S.join_group,
           S.platform,
           S.terms_agree_yn,
-          first_order_dt,
+          S.first_order_dt,
           [STRUCT(
               S.snapshot_dt as snapshot_dt,
               S.total_score as total_score,
