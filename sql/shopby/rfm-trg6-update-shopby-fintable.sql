@@ -1,5 +1,6 @@
 CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst` (
   user_id STRING,
+  member_no STRING,
   -- 변경이 적은 기본 정보
   gender STRING,
   age_group STRING,
@@ -35,10 +36,16 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
       refund_rate FLOAT64,
       survival_prob FLOAT64,
       predicted_survival_time FLOAT64,
-      total_accumulate_cash INT64,
-      total_accumulate_shoji INT64,
+      pre_cash INT64,
       current_cash INT64,
-      current_shoji INT64
+      current_shoji INT64,
+      earn INT64,
+      spend INT64,
+      exchange INT64,
+      exchange_cash_rate FLOAT64,
+      burnt INT64,
+      total_accumulate_cash INT64,
+      total_accumulate_shoji INT64
   >>,
 
   -- 카테고리 관심도 이력
@@ -69,6 +76,7 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
   USING (
       SELECT 
           user_id,
+          member_no,
           gender,
           age_group,
           join_group,
@@ -104,6 +112,11 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
           total_accumulate_shoji,
           current_cash,
           current_shoji,
+          earn,
+          spend,
+          exchange,
+          exchange_cash_rate,
+          burnt,
           ranking_1_1,
           ranking_1_2,
           ranking_1_3,
@@ -130,6 +143,7 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
   WHEN MATCHED THEN
       UPDATE
       SET
+          member_no = S.member_no,
           gender = S.gender,
           age_group = S.age_group,
           join_group = S.join_group,
@@ -166,12 +180,17 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
               S.refund_rate as refund_rate,
               S.survival_prob as survival_prob,
               S.predicted_survival_time as predicted_survival_time,
-              S.total_accumulate_cash as total_accumulate_cash,
-              S.total_accumulate_shoji as total_accumulate_shoji,
+              S.pre_cash as pre_cash,
               S.current_cash as current_cash,
-              S.current_shoji as current_shoji
-          )]
-          ),
+              S.current_shoji as current_shoji,
+              S.earn as earn,
+              S.spend as spend,
+              S.exchange as exchange,
+              S.exchange_cash_rate as exchange_cash_rate,
+              S.burnt as burnt,
+              S.total_accumulate_cash as total_accumulate_cash,
+              S.total_accumulate_shoji as total_accumulate_shoji
+          )]),
           
           category_history = ARRAY_CONCAT(
           T.category_history, 
@@ -200,6 +219,7 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
   WHEN NOT MATCHED THEN
       INSERT (
           user_id, 
+          member_no,
           gender,
           age_group,
           join_group,
@@ -211,6 +231,7 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
       )
       VALUES (
           S.user_id,
+          S.member_no,
           S.gender,
           S.age_group,
           S.join_group,
@@ -244,10 +265,16 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
               S.refund_rate as refund_rate,
               S.survival_prob as survival_prob,
               S.predicted_survival_time as predicted_survival_time,
-              S.total_accumulate_cash as total_accumulate_cash,
-              S.total_accumulate_shoji as total_accumulate_shoji,
+              S.pre_cash as pre_cash,
               S.current_cash as current_cash,
-              S.current_shoji as current_shoji
+              S.current_shoji as current_shoji,
+              S.earn as earn,
+              S.spend as spend,
+              S.exchange as exchange,
+              S.exchange_cash_rate as exchange_cash_rate,
+              S.burnt as burnt,
+              S.total_accumulate_cash as total_accumulate_cash,
+              S.total_accumulate_shoji as total_accumulate_shoji
           )],
           [STRUCT(
               S.snapshot_dt as snapshot_dt,
