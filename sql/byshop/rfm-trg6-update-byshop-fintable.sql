@@ -1,4 +1,4 @@
-CREATE table if not Exists `ballosodeuk.ynam.rfm_byshop_history_array_table` (
+CREATE table if not Exists `ballosodeuk.ynam.rfm_byshop_history_array_table_tst` (
     user_id STRING,
     -- 변경이 적은 기본 정보
     gender STRING,
@@ -69,7 +69,7 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_byshop_history_array_table` (
     >>
     );
 
-    MERGE `ballosodeuk.ynam.rfm_byshop_history_array_table` T
+    MERGE `ballosodeuk.ynam.rfm_byshop_history_array_table_tst` T
     USING (
     SELECT 
         user_id,
