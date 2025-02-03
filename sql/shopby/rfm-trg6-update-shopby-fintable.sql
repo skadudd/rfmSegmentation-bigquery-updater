@@ -1,5 +1,7 @@
-CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table` (
+-- CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table` (
+create or replace table `ballosodeuk.ynam.rfm_shopby_history_array_table` (
 user_id STRING,
+-- member_no STRING,
 -- 변경이 적은 기본 정보
 gender STRING,
 age_group STRING,
@@ -69,6 +71,7 @@ MERGE `ballosodeuk.ynam.rfm_shopby_history_array_table` T
 USING (
     SELECT 
         user_id,
+        -- member_no,
         gender,
         age_group,
         join_group,
@@ -130,6 +133,7 @@ ON T.user_id = S.user_id
 WHEN MATCHED THEN
     UPDATE
     SET
+        -- member_no = S.member_no,
         gender = S.gender,
         age_group = S.age_group,
         join_group = S.join_group,
@@ -200,6 +204,7 @@ WHEN MATCHED THEN
 WHEN NOT MATCHED THEN
     INSERT (
         user_id, 
+        -- member_no,
         gender,
         age_group,
         join_group,
@@ -211,6 +216,7 @@ WHEN NOT MATCHED THEN
     )
     VALUES (
         S.user_id,
+        -- S.member_no,
         S.gender,
         S.age_group,
         S.join_group,

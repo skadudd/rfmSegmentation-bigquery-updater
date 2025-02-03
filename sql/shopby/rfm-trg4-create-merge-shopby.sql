@@ -6,6 +6,7 @@ WITH
 shopby_base AS (
 SELECT DISTINCT
     user_id,
+    member_no,
     platform,
     join_dt,
     cum_lifetime,
@@ -27,6 +28,7 @@ WHERE monetary >= 1 -- 1/9 수정 (as is frequency)
 shopby_left_bycommerce AS (
 SELECT
     sb.user_id,
+    sb.member_no,
     COALESCE(sb.platform, b.platform) AS platform,
     COALESCE(sb.join_dt, b.join_dt)   AS join_dt,
     COALESCE(sb.cum_lifetime, b.cum_lifetime) AS cum_lifetime,
@@ -53,6 +55,7 @@ LEFT JOIN ballosodeuk.ynam.rfm_table_bycommerce b
 merged_rfm AS (
 SELECT 
     w.user_id,
+    w.member_no,
     w.platform,
     w.join_dt,
     w.cum_lifetime,
@@ -84,7 +87,7 @@ LEFT JOIN ballosodeuk.ynam.rfm_table_noncommerce n
 -- 4) 쇼지, 서바이벌, 카테고리 파워 등 부가 정보
 fill_shoji_properties AS (
 SELECT 
-    b.wk_id AS user_id,
+    b.wk_id AS user_id, max(a.member_no) as member_no,
     SUM(CASE WHEN a.accumulation_status IN ('취소로 인한 지급','지급') 
         AND DATE(a.register_dttm) <= date({end_date}) 
         THEN a.amt END) AS accumulate_shoji,
@@ -243,7 +246,8 @@ LEFT JOIN byshop_categorypower g
 -- 6) 마지막 그룹바이 + 필요한 로직
 source_table AS (
 SELECT 
-    user_id,
+    user_id, 
+    MAX(member_no) AS member_no,
     MAX(platform)                 AS platform,
     MAX(join_dt)                  AS join_dt,
     MAX(cum_lifetime)            AS cum_lifetime,

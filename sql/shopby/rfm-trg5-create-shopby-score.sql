@@ -8,6 +8,7 @@ rfm_scores AS (
 SELECT 
     tgt,
     user_id,
+    member_no,
     first_order_dt,
     refund_rate,
     gender,
@@ -104,6 +105,7 @@ WHERE f_shop > 0
     SELECT
         tgt,
         user_id,
+        member_no,
         --  유저 세그
         gender,
         join_group,
