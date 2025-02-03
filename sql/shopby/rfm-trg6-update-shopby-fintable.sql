@@ -1,5 +1,5 @@
--- CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table` (
-create or replace table `ballosodeuk.ynam.rfm_shopby_history_array_table` (
+CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table` (
+-- create or replace table `ballosodeuk.ynam.rfm_shopby_history_array_table` (
 user_id STRING,
 -- member_no STRING,
 -- 변경이 적은 기본 정보
