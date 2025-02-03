@@ -110,6 +110,7 @@ CREATE table if not Exists `ballosodeuk.ynam.rfm_shopby_history_array_table_tst`
           predicted_survival_time_shop AS predicted_survival_time,
           total_accumulate_cash,
           total_accumulate_shoji,
+          pre_cash,
           current_cash,
           current_shoji,
           earn,
