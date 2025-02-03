@@ -37,8 +37,14 @@ score_history ARRAY<STRUCT<
     predicted_survival_time FLOAT64,
     total_accumulate_cash INT64,
     total_accumulate_shoji INT64,
+    pre_cash INT64,
     current_cash INT64,
     current_shoji INT64
+    ,earn INT64
+    -- ,spend INT64
+    -- ,exchange INT64
+    -- ,exchange_cash_rate FLOAT64
+    -- ,burnt INT64
 >>,
 
 -- 카테고리 관심도 이력
@@ -102,8 +108,14 @@ USING (
         predicted_survival_time_shop AS predicted_survival_time,
         total_accumulate_cash,
         total_accumulate_shoji,
+        pre_cash,
         current_cash,
         current_shoji,
+        earn,
+        spend,
+        exchange,
+        exchange_cash_rate,
+        burnt,
         ranking_1_1,
         ranking_1_2,
         ranking_1_3,
@@ -168,8 +180,14 @@ WHEN MATCHED THEN
             S.predicted_survival_time as predicted_survival_time,
             S.total_accumulate_cash as total_accumulate_cash,
             S.total_accumulate_shoji as total_accumulate_shoji,
+            S.pre_cash as pre_cash,
             S.current_cash as current_cash,
             S.current_shoji as current_shoji
+            ,S.earn as earn
+            -- ,S.spend as spend
+            -- ,S.exchange as exchange
+            -- ,S.exchange_cash_rate as exchange_cash_rate
+            -- ,S.burnt as burnt
         )]
         ),
         
@@ -246,8 +264,14 @@ WHEN NOT MATCHED THEN
             S.predicted_survival_time as predicted_survival_time,
             S.total_accumulate_cash as total_accumulate_cash,
             S.total_accumulate_shoji as total_accumulate_shoji,
+            S.pre_cash as pre_cash,
             S.current_cash as current_cash,
             S.current_shoji as current_shoji
+            ,S.earn as earn
+            -- ,S.spend as spend
+            -- ,S.exchange as exchange
+            -- ,S.exchange_cash_rate as exchange_cash_rate
+            -- ,S.burnt as burnt
         )],
         [STRUCT(
             S.snapshot_dt as snapshot_dt,
