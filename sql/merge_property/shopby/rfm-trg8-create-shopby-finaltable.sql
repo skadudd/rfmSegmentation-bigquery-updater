@@ -46,6 +46,7 @@
         c.register_dt,
         c.pre_cash,
         c.current_cash,
+        c.pre_shoji,
         c.current_shoji,
         c.earn,
         c.spend,
@@ -57,7 +58,7 @@
         a.category_history
     FROM ballosodeuk.ynam.rfm_shopby_history_array_table a, 
     UNNEST(score_history) b
-    LEFT JOIN ballosodeuk.ynam.test_properties c 
+    LEFT JOIN ballosodeuk.ynam.rfm_table_shopby_rfm_properties c 
         ON a.user_id = c.user_id 
         AND b.snapshot_dt = c.register_dt
     GROUP BY 
