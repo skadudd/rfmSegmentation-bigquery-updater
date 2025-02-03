@@ -6,6 +6,7 @@ WITH
 shopby_base AS (
 SELECT DISTINCT
     user_id,
+    member_no,
     platform,
     join_dt,
     cum_lifetime,
@@ -26,7 +27,7 @@ WHERE monetary >= 1 -- 1/9 수정 (as is frequency)
 -- 2) 쿠팡 RFM 병합 (LEFT JOIN)
 shopby_left_bycommerce AS (
 SELECT
-    sb.user_id,
+    sb.user_id,sb.member_no,
     COALESCE(sb.platform, b.platform) AS platform,
     COALESCE(sb.join_dt, b.join_dt)   AS join_dt,
     COALESCE(sb.cum_lifetime, b.cum_lifetime) AS cum_lifetime,
@@ -53,6 +54,7 @@ LEFT JOIN ballosodeuk.ynam.rfm_table_bycommerce b
 merged_rfm AS (
 SELECT 
     w.user_id,
+    w.member_no,
     w.platform,
     w.join_dt,
     w.cum_lifetime,
@@ -83,25 +85,8 @@ LEFT JOIN ballosodeuk.ynam.rfm_table_noncommerce n
 -------------------------------------------------------------------------------
 -- 4) 쇼지, 서바이벌, 카테고리 파워 등 부가 정보
 fill_shoji_properties AS (
-SELECT 
-    b.wk_id AS user_id,
-    SUM(CASE WHEN a.accumulation_status IN ('취소로 인한 지급','지급') 
-        AND DATE(a.register_dttm) <= date({end_date}) 
-        THEN a.amt END) AS accumulate_shoji,
-    COALESCE(
-    SUM(CASE WHEN a.accumulation_status IN ('취소로 인한 지급','지급') 
-        AND DATE(a.register_dttm) <= date({end_date}) 
-        THEN a.amt END)
-    - SUM(CASE WHEN a.accumulation_status IN ('차감') 
-        AND DATE(a.register_dttm) <= date({end_date}) 
-        THEN a.amt END),
-    0
-    ) AS current_shoji
-FROM ballosodeuk.dw.fact_shopby_reward a
-LEFT JOIN ballosodeuk.dw.dim_shopby_member b
-    ON a.member_no = b.member_no
-WHERE DATE(a.register_dttm) <= date({end_date})
-GROUP BY user_id
+SELECT *
+from ballosodeuk.ynam.rfm_table_shopby_shoji_prop
 ),
 
 fill_shopby_churn_properties AS (
@@ -138,12 +123,17 @@ SELECT
     ,CASE WHEN a.total_accumulate_cash IS NULL THEN b.total_accumulate_cash 
         ELSE a.total_accumulate_cash END AS total_accumulate_cash
     
-    ,b.current_cash
     ,b.terms_agree_yn
     
     -- 쇼지
-    ,c.accumulate_shoji
+    ,c.pre_cash
+    ,c.current_cash
     ,c.current_shoji
+    ,c.earn
+    ,c.spend
+    ,c.exchange
+    ,c.exchange_cash_rate
+    ,c.burnt
     
     -- shopby churn
     ,d.days_since_last_purchase      AS last_purchase_shop
@@ -213,7 +203,7 @@ LEFT JOIN (
     inner_a.join_dt,
     inner_a.platform,
     inner_a.current_cash, 
-    inner_a.total_accumulate_cash, 
+    inner_a.total_accumulate_cash,
     inner_a.terms_agree_yn,
     inner_b.gender,
     inner_b.birth_year
@@ -244,6 +234,7 @@ LEFT JOIN byshop_categorypower g
 source_table AS (
 SELECT 
     user_id,
+    MAX(member_no)                 AS member_no,
     MAX(platform)                 AS platform,
     MAX(join_dt)                  AS join_dt,
     MAX(cum_lifetime)            AS cum_lifetime,
@@ -255,9 +246,16 @@ SELECT
 
     -- 재산
     MAX(COALESCE(cast (total_accumulate_cash as int64) ,0))    AS total_accumulate_cash,
-    MAX(COALESCE(accumulate_shoji,0))         AS total_accumulate_shoji,
-    MAX(COALESCE(cast (current_cash as int64),0))            AS current_cash,
-    MAX(COALESCE(current_shoji,0))           AS current_shoji,
+    sum(COALESCE(earn,0)) + sum(coalesce(exchange,0)) AS total_accumulate_shoji,
+
+    max(coalesce(pre_cash,0)) as pre_cash,
+    max(coalesce(current_cash,0)) as current_cash,
+    max(coalesce(current_shoji,0)) as current_shoji,
+    max(coalesce(earn,0)) as earn,
+    max(coalesce(spend,0)) as spend,
+    max(coalesce(exchange,0)) as exchange,
+    max(coalesce(exchange_cash_rate,0)) as exchange_cash_rate,
+    max(coalesce(burnt,0)) as burnt,
 
     --  유저의 쇼핑 프로퍼티
     -- --  쇼핑
@@ -352,3 +350,4 @@ END AS tgt,
 {end_date} AS snapshot_dt
 FROM source_table
 )
+
