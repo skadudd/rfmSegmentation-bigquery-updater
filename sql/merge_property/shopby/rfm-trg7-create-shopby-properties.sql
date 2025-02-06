@@ -5,7 +5,7 @@ with raw as
         ,row_number() over (partition by member_no, register_dttm, related_accumulation_no, accumulation_status order by register_dttm) as rn
         
     from ballosodeuk.dw.fact_shopby_reward a
-    WHERE register_dt between date("2024-10-01") and date({end_date}))
+    WHERE register_dt between date("2024-10-01") and date({end_date})
     )
 
 ,daily_net_amount as 
