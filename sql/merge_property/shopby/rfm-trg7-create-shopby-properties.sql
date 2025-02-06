@@ -1,11 +1,22 @@
 with raw as 
-    (select
-        register_dttm, register_dt, member_no, amt, accumulation_status, reason, reason_detail
-        ,mapping_type, mapping_value, accumulation_no, related_accumulation_no, reg_dttm, mod_dttm
-        ,row_number() over (partition by member_no, register_dttm, related_accumulation_no, accumulation_status order by register_dttm) as rn
-        
-    from ballosodeuk.dw.fact_shopby_reward a
-    WHERE register_dt between date("2024-10-01") and date({end_date})
+    (
+        select *
+        from 
+        (select
+            register_dttm, register_dt, member_no, amt, accumulation_status, reason, reason_detail
+            ,mapping_type, mapping_value, accumulation_no, related_accumulation_no, reg_dttm, mod_dttm
+            ,CASE 
+                WHEN length(related_accumulation_no) > 1 THEN 
+                    row_number() over (
+                        partition by member_no, register_dttm, related_accumulation_no, amt, accumulation_status 
+                        order by register_dttm
+                    )
+                ELSE 1
+            END as rn
+            
+        from ballosodeuk.dw.fact_shopby_reward a
+        WHERE register_dt between date("2024-10-01") and date("2025-02-06"))
+        where rn = 1
     )
 
 ,daily_net_amount as 
@@ -21,6 +32,10 @@ with raw as
         )
     group by register_dt, member_no
     )
+
+-- select * from raw
+-- where member_no = "90929688"
+--     and rn = 1
 
 ,exception_case as (
 select register_dt, user_id, sum(amt) as amt, "소멸" as reason
